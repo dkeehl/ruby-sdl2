@@ -1954,6 +1954,21 @@ static VALUE Texture_debug_info(VALUE self)
     return info;
 }
 
+/* @param pixels [String] the pixels data
+ * @param pitch [Integer] the number of bytes in a row of pixel data
+ * @param rect [Rect] the area to update
+ * @return [Nil]
+ */
+static VALUE Texture_update(VALUE self, VALUE pixels, VALUE pitch, VALUE rect) 
+{
+    Texture* t = Get_Texture(self);
+    int p = NUM2INT(pitch);
+    void* pxs = ruby_xmalloc(RSTRING_LEN(pixels));
+    memcpy(pxs, RSTRING_PTR(pixels), RSTRING_LEN(pixels));
+    HANDLE_ERROR(SDL_UpdateTexture(t->texture, Get_SDL_Rect_or_NULL(rect), pxs, p));
+    return Qnil;
+}
+
 /*
  * Document-class: SDL2::Surface
  *
@@ -2981,6 +2996,7 @@ void rubysdl2_init_video(void)
     rb_define_method(cTexture, "h", Texture_h, 0);
     rb_define_method(cTexture, "inspect", Texture_inspect, 0);
     rb_define_method(cTexture, "debug_info", Texture_debug_info, 0);
+    rb_define_method(cTexture, "update", Texture_update, 3);
     /* define(`DEFINE_TEXTUREAH_ACCESS_CONST', `rb_define_const(cTexture, "ACCESS_$1", INT2NUM(SDL_TEXTUREACCESS_$1))') */
     /* texture access pattern - changes rarely, not lockable */
     DEFINE_TEXTUREAH_ACCESS_CONST(STATIC);
